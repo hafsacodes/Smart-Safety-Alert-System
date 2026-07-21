@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "846648184315",
+    "project_id": "smart-safety-alert-syste-5e787",
+    "storage_bucket": "smart-safety-alert-syste-5e787.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:846648184315:android:3054d83e41d98b04658f5e",
+        "android_client_info": {
+          "package_name": "com.hafsa.fyp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0aZv4MT8OK32iRCaBaZYi4jLeZpKcLIg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
