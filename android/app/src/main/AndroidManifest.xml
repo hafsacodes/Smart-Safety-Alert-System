@@ -2,9 +2,9 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <application
-        android:label="fyp"
+        android:label="Smart Safety Alert"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@drawable/launch_background">
         <activity
             android:name=".MainActivity"
             android:exported="true"

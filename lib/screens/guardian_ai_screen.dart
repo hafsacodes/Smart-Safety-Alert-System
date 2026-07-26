@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/guardian_ai_service.dart';
 
 class GuardianAiScreen extends StatefulWidget {
   const GuardianAiScreen({super.key});
@@ -8,18 +9,19 @@ class GuardianAiScreen extends StatefulWidget {
 }
 
 class _GuardianAiScreenState extends State<GuardianAiScreen> {
-  final TextEditingController messageController =
-  TextEditingController();
+  final TextEditingController messageController = TextEditingController();
 
   final List<Map<String, dynamic>> messages = [
     {
       "isUser": false,
       "message":
-      "Hello! 👋 I am Guardian AI.\n\nI'm here to help you stay safe.\n\nAsk me anything related to personal safety, emergency guidance, safe routes or nearby danger."
+      "Hello! 👋 I am Guardian AI.\n\nI'm your personal safety assistant.\n\nAsk me anything about:\n\n• Personal Safety\n• SOS\n• Incident Reporting\n• Emergency Contacts\n• Safety Map\n• Public Alerts\n• Safe Routes\n• Emergency Guidance",
     }
   ];
 
   void askQuestion(String question) {
+    final response = GuardianAIService.getResponse(question);
+
     setState(() {
       messages.add({
         "isUser": true,
@@ -28,8 +30,7 @@ class _GuardianAiScreenState extends State<GuardianAiScreen> {
 
       messages.add({
         "isUser": false,
-        "message":
-        "This is a demo response.\nLater this answer will come from Google Gemini AI."
+        "message": response,
       });
     });
   }
@@ -42,22 +43,19 @@ class _GuardianAiScreenState extends State<GuardianAiScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(
-          color: Colors.black,
-        ),
+        foregroundColor: Colors.black,
         title: const Text(
           "Guardian AI",
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
 
       body: Column(
         children: [
 
-        // AI HEADER
+        //=========================
+        // HEADER
+        //=========================
 
         Container(
         width: double.infinity,
@@ -67,12 +65,10 @@ class _GuardianAiScreenState extends State<GuardianAiScreen> {
         child: Column(
           children: [
 
-            CircleAvatar(
+            const CircleAvatar(
               radius: 40,
-              backgroundColor:
-              const Color(0xFF1565FF),
-
-              child: const Icon(
+              backgroundColor: Color(0xFF1565FF),
+              child: Icon(
                 Icons.smart_toy,
                 color: Colors.white,
                 size: 45,
@@ -92,11 +88,9 @@ class _GuardianAiScreenState extends State<GuardianAiScreen> {
             const SizedBox(height: 8),
 
             const Text(
-              "Ask anything related to your safety.",
+              "Ask me anything related to your safety or this application.",
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey,
-              ),
+              style: TextStyle(color: Colors.grey),
             ),
           ],
         ),
@@ -104,41 +98,40 @@ class _GuardianAiScreenState extends State<GuardianAiScreen> {
 
       const SizedBox(height: 10),
 
+      //=========================
       // SUGGESTED QUESTIONS
+      //=========================
 
       SizedBox(
         height: 50,
-
         child: ListView(
           scrollDirection: Axis.horizontal,
-
-          padding:
-          const EdgeInsets.symmetric(horizontal: 15),
+          padding: const EdgeInsets.symmetric(horizontal: 15),
 
           children: [
 
-            questionChip(
-                "Is this area safe?"),
+            questionChip("How do I use SOS?"),
 
-            questionChip(
-                "Safest route nearby"),
+            questionChip("Report an incident"),
 
-            questionChip(
-                "Emergency tips"),
+            questionChip("Emergency tips"),
 
-            questionChip(
-                "Nearby danger"),
+            questionChip("Is this area safe?"),
 
-            questionChip(
-                "Call police?"),
+            questionChip("Safe route"),
 
+            questionChip("Emergency contacts"),
+
+            questionChip("Women's safety"),
           ],
         ),
       ),
 
       const SizedBox(height: 10),
 
+      //=========================
       // CHAT AREA
+      //=========================
 
       Expanded(
         child: ListView.builder(
@@ -148,8 +141,7 @@ class _GuardianAiScreenState extends State<GuardianAiScreen> {
 
           itemBuilder: (context, index) {
 
-            bool isUser =
-            messages[index]["isUser"];
+            final bool isUser = messages[index]["isUser"];
 
             return Align(
               alignment: isUser
@@ -157,14 +149,12 @@ class _GuardianAiScreenState extends State<GuardianAiScreen> {
                   : Alignment.centerLeft,
 
               child: Container(
-                margin:
-                const EdgeInsets.only(bottom: 12),
+                margin: const EdgeInsets.only(bottom: 12),
 
                 padding: const EdgeInsets.all(15),
 
-                constraints:
-                const BoxConstraints(
-                  maxWidth: 300,
+                constraints: const BoxConstraints(
+                  maxWidth: 320,
                 ),
 
                 decoration: BoxDecoration(
@@ -172,30 +162,40 @@ class _GuardianAiScreenState extends State<GuardianAiScreen> {
                       ? const Color(0xFF1565FF)
                       : Colors.white,
 
-                  borderRadius:
-                  BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(18),
+
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.shade200,
+                      blurRadius: 5,
+                    )
+                  ],
                 ),
 
                 child: Text(
                   messages[index]["message"],
-
                   style: TextStyle(
                     color: isUser
                         ? Colors.white
                         : Colors.black87,
                     fontSize: 15,
+                    height: 1.5,
                   ),
                 ),
               ),
             );
           },
         ),
-      ),          // MESSAGE INPUT
+      ),
+
+    // MESSAGE INPUT CONTAINER STARTS HERE
+          //=========================
+          // MESSAGE INPUT
+          //=========================
 
           Container(
             padding: const EdgeInsets.all(15),
             color: Colors.white,
-
             child: Row(
               children: [
 
@@ -203,18 +203,31 @@ class _GuardianAiScreenState extends State<GuardianAiScreen> {
                   child: TextField(
                     controller: messageController,
 
+                    textInputAction: TextInputAction.send,
+
+                    onSubmitted: (value) {
+                      if (value.trim().isEmpty) return;
+
+                      askQuestion(value.trim());
+
+                      messageController.clear();
+                    },
+
                     decoration: InputDecoration(
                       hintText: "Ask Guardian AI...",
 
+                      filled: true,
+                      fillColor: Colors.grey.shade100,
+
                       border: OutlineInputBorder(
-                        borderRadius:
-                        BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(30),
                         borderSide: BorderSide.none,
                       ),
 
-                      filled: true,
-                      fillColor:
-                      Colors.grey.shade100,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 15,
+                      ),
                     ),
                   ),
                 ),
@@ -223,8 +236,7 @@ class _GuardianAiScreenState extends State<GuardianAiScreen> {
 
                 CircleAvatar(
                   radius: 26,
-                  backgroundColor:
-                  const Color(0xFF1565FF),
+                  backgroundColor: const Color(0xFF1565FF),
 
                   child: IconButton(
                     icon: const Icon(
@@ -234,41 +246,39 @@ class _GuardianAiScreenState extends State<GuardianAiScreen> {
 
                     onPressed: () {
 
-                      if (messageController
-                          .text
-                          .trim()
-                          .isEmpty) {
+                      if (messageController.text.trim().isEmpty) {
                         return;
                       }
 
                       askQuestion(
-                          messageController.text);
+                        messageController.text.trim(),
+                      );
 
                       messageController.clear();
                     },
                   ),
                 ),
+
               ],
             ),
           ),
+
         ],
       ),
     );
   }
 
-  //==========================
+  //==========================================
   // QUESTION CHIP
-  //==========================
+  //==========================================
 
   Widget questionChip(String question) {
-
     return Padding(
       padding: const EdgeInsets.only(right: 10),
 
       child: ActionChip(
 
-        backgroundColor:
-        const Color(0xFF1565FF),
+        backgroundColor: const Color(0xFF1565FF),
 
         label: Text(
           question,
@@ -278,7 +288,6 @@ class _GuardianAiScreenState extends State<GuardianAiScreen> {
         ),
 
         onPressed: () {
-
           askQuestion(question);
         },
       ),
