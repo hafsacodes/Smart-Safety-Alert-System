@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_model.dart';
 import '../services/firestore_service.dart';
 import '../services/location_service.dart';
+import '../services/ai_service.dart';
 
 class SosAlertScreen extends StatefulWidget {
   const SosAlertScreen({super.key});
@@ -92,12 +93,24 @@ class _SosAlertScreenState extends State<SosAlertScreen> {
         location.longitude,
       );
 
+      final severity = AIService.analyzeIncident(
+        "Emergency SOS button pressed by user",
+      );
+
+      final aiRecommendation =
+      AIService.getSafetyRecommendation(
+        severity,
+      );
+
       await _firestoreService.sendSOSAlert(
         userId: currentUser.uid,
         userName: user.fullName,
         latitude: location.latitude,
         longitude: location.longitude,
         location: address,
+
+        severity: severity,
+        aiRecommendation: aiRecommendation,
       );
 
       if (!mounted) return;

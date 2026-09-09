@@ -148,6 +148,7 @@ class _ManageUsersScreenState
 
                     List<UserModel> users =
                     snapshot.data!;
+                    users = users.where((user) => user.role == "user").toList();
 
                     if (searchController
                         .text

@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../screens/login_screen.dart';
+import 'edit_admin_profile_screen.dart';
+import '../models/user_model.dart';
+import '../services/firestore_service.dart';
+import 'change_admin_password_screen.dart';
 
 class AdminProfileScreen extends StatefulWidget {
   const AdminProfileScreen({super.key});
@@ -12,7 +18,34 @@ class _AdminProfileScreenState
     extends State<AdminProfileScreen> {
 
   bool notifications = true;
+  final FirestoreService _firestoreService = FirestoreService();
 
+  UserModel? admin;
+
+  bool isLoading = true;
+  Future<void> loadAdmin() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
+
+    admin = await _firestoreService.getUser(user.uid);
+
+    if (!mounted) return;
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+  @override
+  void initState() {
+    super.initState();
+    loadAdmin();
+  }
   @override
   Widget build(BuildContext context) {
 
@@ -31,7 +64,11 @@ class _AdminProfileScreenState
           title: const Text("Admin Profile"),
         ),
 
-        body: SingleChildScrollView(
+      body: isLoading
+          ? const Center(
+        child: CircularProgressIndicator(),
+      )
+          : SingleChildScrollView(
 
             padding: const EdgeInsets.all(20),
 
@@ -59,9 +96,8 @@ class _AdminProfileScreenState
 
             const SizedBox(height: 20),
 
-            const Text(
-
-              "Administrator",
+                  Text(
+                    admin?.fullName ?? "Administrator",
 
               style: TextStyle(
 
@@ -73,9 +109,8 @@ class _AdminProfileScreenState
 
             const SizedBox(height: 8),
 
-            const Text(
-
-              "admin@safealert.com",
+                  Text(
+                    admin?.email ?? "",
 
               style: TextStyle(
 
@@ -135,19 +170,19 @@ class _AdminProfileScreenState
                   buildInfoTile(
                     Icons.person,
                     "Full Name",
-                    "System Administrator",
+                    admin?.fullName ?? "",
                   ),
 
                   buildInfoTile(
                     Icons.email,
                     "Email",
-                    "admin@safealert.com",
+                    admin?.email ?? "",
                   ),
 
                   buildInfoTile(
                     Icons.phone,
                     "Phone",
-                    "+92 300 0000000",
+                    admin?.phone ?? "",
                   ),
 
                   buildInfoTile(
@@ -219,14 +254,15 @@ class _AdminProfileScreenState
                       size: 18,
                     ),
 
-                    onTap: () {
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-
-                        const SnackBar(
-                          content: Text("Edit Profile clicked"),
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const EditAdminProfileScreen(),
                         ),
                       );
+
+                      loadAdmin();
                     },
                   ),
 
@@ -246,11 +282,10 @@ class _AdminProfileScreenState
                     ),
 
                     onTap: () {
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-
-                        const SnackBar(
-                          content: Text("Change Password clicked"),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ChangeAdminPasswordScreen(),
                         ),
                       );
                     },
@@ -357,11 +392,20 @@ class _AdminProfileScreenState
                         ),
                       ),
 
-                      onPressed: () {
+                        onPressed: () async {
+                          final navigator = Navigator.of(context);
 
-                        Navigator.pop(context);
+                          await FirebaseAuth.instance.signOut();
 
-                      },
+                          if (!mounted) return;
+
+                          navigator.pushAndRemoveUntil(
+                            MaterialPageRoute(
+                              builder: (_) => const LoginScreen(),
+                            ),
+                                (route) => false,
+                          );
+                        },
                     ),
                   ),
 
@@ -369,7 +413,7 @@ class _AdminProfileScreenState
 
                 ],
             ),
-        ),
+           ),
     );
   }
 

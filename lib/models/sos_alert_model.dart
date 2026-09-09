@@ -8,6 +8,10 @@ class SosAlertModel {
   final String mapUrl;
   final String status;
 
+  // NEW
+  final String severity;
+  final String aiRecommendation;
+
   SosAlertModel({
     required this.alertId,
     required this.userId,
@@ -17,6 +21,10 @@ class SosAlertModel {
     required this.location,
     required this.mapUrl,
     required this.status,
+
+    // NEW
+    required this.severity,
+    required this.aiRecommendation,
   });
 
   factory SosAlertModel.fromMap(Map<String, dynamic> map) {
@@ -29,6 +37,11 @@ class SosAlertModel {
       location: map["location"] ?? "",
       mapUrl: map["mapUrl"] ?? "",
       status: map["status"] ?? "",
+
+      // NEW
+      severity: map["severity"] ?? "Medium",
+      aiRecommendation:
+      map["aiRecommendation"] ?? "Stay alert and remain cautious.",
     );
   }
 
@@ -42,6 +55,10 @@ class SosAlertModel {
       "location": location,
       "mapUrl": mapUrl,
       "status": status,
+
+      // NEW
+      "severity": severity,
+      "aiRecommendation": aiRecommendation,
     };
   }
 }

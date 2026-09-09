@@ -468,7 +468,61 @@ class _MapScreenState extends State<MapScreen> {
                                         ),
 
                                         const SizedBox(height: 16),
+                                        const SizedBox(height: 12),
 
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: Colors.orange.withValues(alpha: 0.08),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+
+                                              Row(
+                                                children: [
+
+                                                  const Icon(
+                                                    Icons.security,
+                                                    color: Colors.orange,
+                                                  ),
+
+                                                  const SizedBox(width: 8),
+
+                                                  Text(
+                                                    "Threat Level: ${alert.severity}",
+                                                    style: const TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+
+                                                ],
+                                              ),
+
+                                              const SizedBox(height: 8),
+
+                                              Row(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+
+                                                  const Icon(
+                                                    Icons.smart_toy,
+                                                    color: Colors.blue,
+                                                  ),
+
+                                                  const SizedBox(width: 8),
+
+                                                  Expanded(
+                                                    child: Text(alert.aiRecommendation),
+                                                  ),
+
+                                                ],
+                                              ),
+
+                                            ],
+                                          ),
+                                        ),
                                         SizedBox(
 
                                           width: double.infinity,
@@ -555,9 +609,26 @@ class _MapScreenState extends State<MapScreen> {
                             itemBuilder: (context, index) {
                               final incident = incidents[index];
 
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 14),
-                                child: Card(
+                              return GestureDetector(
+
+                                  onTap: () async {
+
+                                    final Uri uri = Uri.parse(
+                                      "https://www.google.com/maps/search/?api=1&query=${incident.latitude},${incident.longitude}",
+                                    );
+
+                                    if (await canLaunchUrl(uri)) {
+                                      await launchUrl(
+                                        uri,
+                                        mode: LaunchMode.externalApplication,
+                                      );
+                                    }
+
+                                  },
+
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(bottom: 14),
+                                    child: Card(
                                   elevation: 2,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(18),
@@ -705,6 +776,7 @@ class _MapScreenState extends State<MapScreen> {
                                     ),
                                   ),
                                 ),
+                                  ),
                               );
                             },
                           );

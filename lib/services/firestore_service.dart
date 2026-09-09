@@ -73,7 +73,32 @@ class FirestoreService {
     });
   }
   Future<void> deleteUser(String uid) async {
-    await _firestore.collection("users").doc(uid).delete();
+
+    // Delete all incident reports of this user
+    final incidents = await _firestore
+        .collection("incidents")
+        .where("userId", isEqualTo: uid)
+        .get();
+
+    for (final doc in incidents.docs) {
+      await doc.reference.delete();
+    }
+
+    // Delete all SOS alerts of this user
+    final sosAlerts = await _firestore
+        .collection("sos_alerts")
+        .where("userId", isEqualTo: uid)
+        .get();
+
+    for (final doc in sosAlerts.docs) {
+      await doc.reference.delete();
+    }
+
+    // Finally delete the user document
+    await _firestore
+        .collection("users")
+        .doc(uid)
+        .delete();
   }
   //====================================================
   // EMERGENCY CONTACTS
@@ -158,6 +183,9 @@ class FirestoreService {
     required double latitude,
     required double longitude,
     required String location,
+
+    required String severity,
+    required String aiRecommendation,
   }) async {
     final doc = _firestore.collection("sos_alerts").doc();
 
@@ -171,6 +199,9 @@ class FirestoreService {
       mapUrl:
       "https://www.google.com/maps/search/?api=1&query=$latitude,$longitude",
       status: "Active",
+
+      severity: severity,
+      aiRecommendation: aiRecommendation,
     );
 
     await doc.set({
@@ -215,6 +246,27 @@ class FirestoreService {
         .update({
       "status": status,
     });
+  }
+  Future<void> deleteSOSAlert(String alertId) async {
+    await _firestore
+        .collection("sos_alerts")
+        .doc(alertId)
+        .delete();
+  }
+
+  Stream<List<SosAlertModel>> getMySOSAlerts(String userId) {
+    return _firestore
+        .collection("sos_alerts")
+        .where("userId", isEqualTo: userId)
+        .orderBy("createdAt", descending: true)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+          .map(
+            (doc) => SosAlertModel.fromMap(doc.data()),
+      )
+          .toList(),
+    );
   }
   //====================================================
 // INCIDENT REPORTS

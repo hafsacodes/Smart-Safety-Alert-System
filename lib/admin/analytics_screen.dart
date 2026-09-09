@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../models/analytics_model.dart';
-import '../models/user_model.dart';
 import '../services/firestore_service.dart';
 
 class AnalyticsScreen extends StatefulWidget {
@@ -12,176 +11,275 @@ class AnalyticsScreen extends StatefulWidget {
 }
 
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
-
   final FirestoreService _firestoreService = FirestoreService();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: const Color(0xFFF7F9FC),
 
-      backgroundColor: const Color(0xFFF7F9FC),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          elevation: 0,
+          title: const Text("AI Safety Intelligence"),
+        ),
 
-      appBar: AppBar(
+        body: StreamBuilder<AnalyticsModel>(
+            stream: _firestoreService.getAnalytics(),
+            builder: (context, snapshot) {
 
-        backgroundColor: Colors.white,
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
 
-        foregroundColor: Colors.black,
+              if (!snapshot.hasData) {
+                return const Center(
+                  child: Text("No analytics available"),
+                );
+              }
 
-        elevation: 0,
+              final analytics = snapshot.data!;
 
-        title: const Text("Analytics"),
-      ),
+              String mostCommonIncident = "Harassment";
+              double highest = analytics.harassmentPercentage;
 
-      body: StreamBuilder<AnalyticsModel>(
+              if (analytics.robberyPercentage > highest) {
+                highest = analytics.robberyPercentage;
+                mostCommonIncident = "Robbery";
+              }
 
-        stream: _firestoreService.getAnalytics(),
+              if (analytics.suspiciousPercentage > highest) {
+                highest = analytics.suspiciousPercentage;
+                mostCommonIncident = "Suspicious Activity";
+              }
 
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+              if (analytics.stalkingPercentage > highest) {
+                highest = analytics.stalkingPercentage;
+                mostCommonIncident = "Stalking";
+              }
 
-          if (!snapshot.hasData) {
-            return const Center(
-              child: Text("No analytics available"),
-            );
-          }
+              String overallRisk = "Low";
 
-          final analytics = snapshot.data!;
-
-          return FutureBuilder<List<UserModel>>(
-
-            future: _firestoreService
-                .getUsers()
-                .first,
-
-            builder: (context, userSnapshot) {
-              final int totalUsers =
-                  userSnapshot.data?.length ?? 0;
+              if (analytics.highRiskReports >= 5) {
+                overallRisk = "High";
+              } else if (analytics.highRiskReports >= 2) {
+                overallRisk = "Medium";
+              }
 
               return SingleChildScrollView(
-
                 padding: const EdgeInsets.all(20),
 
                 child: Column(
-
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
-
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
 
+                  const Text(
+                  "AI Safety Intelligence",
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                const Text(
+                  "Guardian AI analyzes incident reports to identify dangerous areas and community safety trends.",
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 16,
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xFF1565FF),
+                        Color(0xFF4F9BFF),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+
+                      const Row(
+                        children: [
+
+                          Icon(
+                            Icons.smart_toy,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+
+                          SizedBox(width: 12),
+
+                          Text(
+                            "Guardian AI Assessment",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      Text(
+                        "Overall Risk Level: $overallRisk",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      Text(
+                        analytics.aiSummary,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          height: 1.5,
+                        ),
+                      ),
+
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 35),
                     const Text(
-
-                      "System Analytics",
-
+                      "Risk Distribution",
                       style: TextStyle(
-                        fontSize: 30,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
 
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 18),
 
-                    const Text(
-
-                      "Overview of reports, alerts and AI predictions.",
-
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 16,
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    Row(
-
-                      children: [
-
-                        Expanded(
-
-                          child: analyticsCard(
-
-                            title: "Users",
-
-                            value: totalUsers.toString(),
-
-                            color: Colors.blue,
-
-                            icon: Icons.people,
-                          ),
-                        ),
-
-                        const SizedBox(width: 15),
-
-                        Expanded(
-
-                          child: analyticsCard(
-
-                            title: "Reports",
-
-                            value: analytics.totalReports.toString(),
-
-                            color: Colors.orange,
-
-                            icon: Icons.report,
-                          ),
-                        ),
-
-                      ],
+                    riskCard(
+                      "High Risk Reports",
+                      analytics.highRiskReports.toString(),
+                      Colors.red,
+                      Icons.warning,
                     ),
 
                     const SizedBox(height: 15),
 
-                    Row(
+                    riskCard(
+                      "Medium Risk Reports",
+                      analytics.mediumRiskReports.toString(),
+                      Colors.orange,
+                      Icons.report_problem,
+                    ),
 
-                      children: [
+                    const SizedBox(height: 15),
 
-                        Expanded(
+                    riskCard(
+                      "Low Risk Reports",
+                      analytics.lowRiskReports.toString(),
+                      Colors.green,
+                      Icons.verified_user,
+                    ),
 
-                          child: analyticsCard(
+                    const SizedBox(height: 35),
 
-                            title: "Alerts",
-
-                            value: analytics.approvedReports.toString(),
-
-                            color: Colors.red,
-
-                            icon: Icons.notifications_active,
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(22),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.shade200,
+                            blurRadius: 8,
                           ),
-                        ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
 
-                        const SizedBox(width: 15),
-
-                        Expanded(
-
-                          child: analyticsCard(
-
-                            title: "AI Risks",
-
-                            value: analytics.highRiskReports.toString(),
-
-                            color: Colors.green,
-
-                            icon: Icons.smart_toy,
+                          const Text(
+                            "Most Common Incident",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
 
-                      ],
+                          const SizedBox(height: 18),
+
+                          Row(
+                            children: [
+
+                              const CircleAvatar(
+                                radius: 28,
+                                backgroundColor: Color(0x221565FF),
+                                child: Icon(
+                                  Icons.local_police,
+                                  color: Color(0xFF1565FF),
+                                ),
+                              ),
+
+                              const SizedBox(width: 18),
+
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+
+                                    Text(
+                                      mostCommonIncident,
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+
+                                    const SizedBox(height: 5),
+
+                                    Text(
+                                      "${(highest * 100).toStringAsFixed(1)}% of all reports",
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+
+                                  ],
+                                ),
+                              ),
+
+                            ],
+                          ),
+
+                        ],
+                      ),
                     ),
 
                     const SizedBox(height: 35),
 
                     const Text(
-
                       "Reports by Category",
-
                       style: TextStyle(
-
                         fontSize: 24,
-
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -215,21 +313,16 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     const SizedBox(height: 35),
 
                     const Text(
-
                       "High Risk Areas",
-
                       style: TextStyle(
-
                         fontSize: 24,
-
                         fontWeight: FontWeight.bold,
                       ),
                     ),
 
-                    const SizedBox(height: 15),
+                    const SizedBox(height: 18),
 
                     for (final area in analytics.highRiskAreas)
-
                       riskAreaTile(
                         area.location,
                         area.level,
@@ -240,132 +333,27 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             : Colors.green,
                       ),
 
-                    const SizedBox(height: 35),
-
-                    Container(
-
-                      width: double.infinity,
-
-                      padding: const EdgeInsets.all(20),
-
-                      decoration: BoxDecoration(
-
-                        gradient: const LinearGradient(
-
-                          colors: [
-
-                            Color(0xFF1565FF),
-
-                            Color(0xFF4F9BFF),
-
-                          ],
-                        ),
-
-                        borderRadius:
-                        BorderRadius.circular(22),
-                      ),
-
-                      child: Column(
-
-                        crossAxisAlignment:
-                        CrossAxisAlignment.start,
-
-                        children: [
-
-                          const Row(
-
-                            children: [
-
-                              Icon(
-                                Icons.smart_toy,
-                                color: Colors.white,
-                                size: 30,
-                              ),
-
-                              SizedBox(width: 10),
-
-                              Text(
-
-                                "Guardian AI Summary",
-
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 22,
-                                  fontWeight:
-                                  FontWeight.bold,
-                                ),
-                              ),
-
-                            ],
-                          ),
-
-                          const SizedBox(height: 18),
-
-                          Text(
-
-                            analytics.aiSummary,
-
-                            style: const TextStyle(
-
-                              color: Colors.white,
-
-                              fontSize: 16,
-
-                              height: 1.5,
-                            ),
-                          ),
-
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 35),
-
-                    const Text(
-
-                      "Weekly Activity",
-
-                      style: TextStyle(
-
-                        fontSize: 24,
-
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    const SizedBox(height: 15),
-
-                    for (final activity
-                    in analytics.weeklyActivity)
-
-                      activityTile(
-                        activity.day,
-                        activity.count,
-                      ),
-
                     const SizedBox(height: 30),
 
                   ],
                 ),
               );
             },
-          );
-        },
-      ),
+        ),
     );
   }
+  //=====================================================
+// RISK CARD
+//=====================================================
 
-  //==========================================
-// ANALYTICS CARD
-//==========================================
-
-  Widget analyticsCard({
-    required String title,
-    required String value,
-    required Color color,
-    required IconData icon,
-  }) {
+  Widget riskCard(
+      String title,
+      String value,
+      Color color,
+      IconData icon,
+      ) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -378,7 +366,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           ),
         ],
       ),
-      child: Column(
+      child: Row(
         children: [
           CircleAvatar(
             radius: 26,
@@ -388,20 +376,25 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               color: color,
             ),
           ),
-          const SizedBox(height: 15),
+
+          const SizedBox(width: 18),
+
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+
           Text(
             value,
             style: TextStyle(
-              color: color,
-              fontSize: 28,
+              fontSize: 26,
               fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.grey,
+              color: color,
             ),
           ),
         ],
@@ -409,25 +402,30 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     );
   }
 
-//==========================================
+//=====================================================
 // CATEGORY PROGRESS
-//==========================================
+//=====================================================
 
-  Widget buildProgressTile(String title,
+  Widget buildProgressTile(
+      String title,
       double value,
-      Color color,) {
+      Color color,
+      ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+
           Text(
             title,
             style: const TextStyle(
               fontWeight: FontWeight.bold,
             ),
           ),
+
           const SizedBox(height: 8),
+
           LinearProgressIndicator(
             value: value,
             minHeight: 10,
@@ -435,18 +433,30 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             color: color,
             backgroundColor: Colors.grey.shade300,
           ),
+
+          const SizedBox(height: 5),
+
+          Text(
+            "${(value * 100).toStringAsFixed(1)}%",
+            style: const TextStyle(
+              color: Colors.grey,
+            ),
+          ),
+
         ],
       ),
     );
   }
 
-//==========================================
+//=====================================================
 // RISK AREA TILE
-//==========================================
+//=====================================================
 
-  Widget riskAreaTile(String area,
+  Widget riskAreaTile(
+      String area,
       String level,
-      Color color,) {
+      Color color,
+      ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.all(18),
@@ -462,11 +472,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       ),
       child: Row(
         children: [
+
           Icon(
             Icons.location_on,
             color: color,
           ),
+
           const SizedBox(width: 15),
+
           Expanded(
             child: Text(
               area,
@@ -476,6 +489,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               ),
             ),
           ),
+
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: 12,
@@ -493,32 +507,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               ),
             ),
           ),
+
         ],
-      ),
-    );
-  }
-
-//==========================================
-// WEEKLY ACTIVITY
-//==========================================
-
-  Widget activityTile(String day,
-      int reports,) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: const CircleAvatar(
-        backgroundColor: Color(0xFF1565FF),
-        child: Icon(
-          Icons.bar_chart,
-          color: Colors.white,
-        ),
-      ),
-      title: Text(day),
-      trailing: Text(
-        "$reports Reports",
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
       ),
     );
   }

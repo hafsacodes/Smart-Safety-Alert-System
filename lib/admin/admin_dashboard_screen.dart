@@ -4,9 +4,7 @@ import 'manage_alerts_screen.dart';
 import 'manage_users_screen.dart';
 import 'analytics_screen.dart';
 import 'admin_profile_screen.dart';
-import '../screens/login_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../services/firestore_service.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -19,8 +17,6 @@ class AdminDashboardScreen extends StatefulWidget {
 class _AdminDashboardScreenState
     extends State<AdminDashboardScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirestoreService _firestoreService = FirestoreService();
-
   int totalUsers = 0;
   int totalReports = 0;
   int totalAlerts = 0;
@@ -250,51 +246,6 @@ class _AdminDashboardScreenState
                       ),
                     );
                   },
-                ),
-
-                const SizedBox(height: 30),
-
-                SizedBox(
-                  width: double.infinity,
-                  height: 55,
-
-                  child: ElevatedButton.icon(
-
-                    style: ElevatedButton.styleFrom(
-
-                      backgroundColor: Colors.red,
-
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                    ),
-
-                    onPressed: () {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
-                        ),
-                            (route) => false,
-                      );
-                    },
-
-                    icon: const Icon(
-                      Icons.logout,
-                      color: Colors.white,
-                    ),
-
-                    label: const Text(
-
-                      "Logout",
-
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
                 ),
 
                 const SizedBox(height: 30),

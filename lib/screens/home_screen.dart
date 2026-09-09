@@ -1,9 +1,44 @@
 import 'package:flutter/material.dart';
 import 'guardian_ai_screen.dart';
 import 'report_incident_screen.dart';
+import '../services/auth_service.dart';
+import '../services/firestore_service.dart';
+import '../models/user_model.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+
+  final AuthService _authService = AuthService();
+  final FirestoreService _firestoreService = FirestoreService();
+
+  UserModel? currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    loadUser();
+  }
+
+  Future<void> loadUser() async {
+
+    final firebaseUser = _authService.getCurrentUser();
+
+    if (firebaseUser != null) {
+
+      final user =
+      await _firestoreService.getUser(firebaseUser.uid);
+
+      setState(() {
+        currentUser = user;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,10 +102,10 @@ class HomeScreen extends StatelessWidget {
                 //======================
 
                 RichText(
-                  text: const TextSpan(
+                  text: TextSpan(
                     children: [
 
-                      TextSpan(
+                      const TextSpan(
                         text: "Hello, ",
                         style: TextStyle(
                           color: Colors.black,
@@ -80,8 +115,8 @@ class HomeScreen extends StatelessWidget {
                       ),
 
                       TextSpan(
-                        text: "Ayesha",
-                        style: TextStyle(
+                        text: currentUser?.fullName ?? "User",
+                        style: const TextStyle(
                           color: Color(0xFF1565FF),
                           fontSize: 36,
                           fontWeight: FontWeight.bold,
@@ -90,7 +125,6 @@ class HomeScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 10),
 
                 const Text(

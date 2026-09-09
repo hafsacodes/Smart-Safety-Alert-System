@@ -112,17 +112,33 @@ class _GuardianAiScreenState extends State<GuardianAiScreen> {
 
             questionChip("How do I use SOS?"),
 
+            questionChip("What happens after SOS?"),
+
             questionChip("Report an incident"),
 
-            questionChip("Emergency tips"),
+            questionChip("What should I do if I am in danger?"),
+
+            questionChip("Safety tips"),
 
             questionChip("Is this area safe?"),
 
             questionChip("Safe route"),
 
+            questionChip("Nearby alerts"),
+
+            questionChip("Threat levels"),
+
             questionChip("Emergency contacts"),
 
+            questionChip("Someone is following me"),
+
             questionChip("Women's safety"),
+
+            questionChip("Night safety"),
+
+            questionChip("Travel safety"),
+
+            questionChip("What is Guardian AI?"),
           ],
         ),
       ),

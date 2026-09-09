@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../models/incident_model.dart';
+import '../models/sos_alert_model.dart';
 import '../services/firestore_service.dart';
-import 'report_details_screen.dart';
 
 class ManageAlertsScreen extends StatefulWidget {
   const ManageAlertsScreen({super.key});
@@ -28,16 +27,13 @@ class _ManageAlertsScreenState
 
         backgroundColor: Colors.white,
 
-        elevation: 0,
-
         foregroundColor: Colors.black,
 
-        title: const Text(
-          "Manage Alerts",
-        ),
+        elevation: 0,
+
+        title: const Text("Manage SOS Alerts"),
+
       ),
-
-
 
       body: Padding(
 
@@ -45,74 +41,85 @@ class _ManageAlertsScreenState
 
         child: Column(
 
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
 
             const Text(
 
-              "Public Safety Alerts",
+              "Manage Active SOS Alerts",
 
               style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
               ),
+
             ),
 
             const SizedBox(height: 8),
 
             const Text(
-              "AI-generated public safety alerts from approved incident reports.",
+
+              "Monitor and manage emergency SOS alerts submitted by users.",
+
               style: TextStyle(
                 color: Colors.grey,
                 fontSize: 16,
               ),
+
             ),
 
             const SizedBox(height: 25),
 
             Expanded(
-              child: StreamBuilder<List<IncidentModel>>(
-                stream: _firestoreService.getIncidents(),
+
+              child: StreamBuilder<List<SosAlertModel>>(
+
+                stream: _firestoreService.getSOSAlerts(),
+
                 builder: (context, snapshot) {
 
-                  if (snapshot.connectionState == ConnectionState.waiting) {
+                  if (snapshot.connectionState ==
+                      ConnectionState.waiting) {
+
                     return const Center(
                       child: CircularProgressIndicator(),
                     );
+
                   }
 
-                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  if (!snapshot.hasData ||
+                      snapshot.data!.isEmpty) {
+
                     return const Center(
+
                       child: Text(
-                        "No approved alerts found.",
+                        "No SOS alerts found.",
                         style: TextStyle(fontSize: 18),
                       ),
+
                     );
+
                   }
 
-                  List<IncidentModel> alerts = snapshot.data!
-                      .where((incident) => incident.status == "Approved")
-                      .toList();
-
-                  if (alerts.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        "No approved alerts found.",
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    );
-                  }
+                  final alerts = snapshot.data!;
 
                   return ListView.builder(
+
                     itemCount: alerts.length,
+
                     itemBuilder: (context, index) {
+
                       return buildAlertCard(alerts[index]);
+
                     },
+
                   );
+
                 },
+
               ),
+
             ),
 
           ],
@@ -124,11 +131,13 @@ class _ManageAlertsScreenState
     );
 
   }
-  Widget buildAlertCard(IncidentModel alert) {
+
+  Widget buildAlertCard(SosAlertModel alert) {
 
     Color levelColor;
 
     switch (alert.severity) {
+
       case "High":
         levelColor = Colors.red;
         break;
@@ -139,202 +148,427 @@ class _ManageAlertsScreenState
 
       default:
         levelColor = Colors.green;
+
     }
 
     return Container(
+
       margin: const EdgeInsets.only(bottom: 18),
+
       padding: const EdgeInsets.all(18),
+
       decoration: BoxDecoration(
+
         color: Colors.white,
+
         borderRadius: BorderRadius.circular(22),
+
         boxShadow: [
+
           BoxShadow(
+
             color: Colors.grey.shade200,
+
             blurRadius: 8,
+
             offset: const Offset(0, 4),
+
           ),
+
         ],
+
       ),
 
       child: Column(
+
         crossAxisAlignment: CrossAxisAlignment.start,
+
         children: [
 
-          Row(
-            children: [
+      Row(
 
-              CircleAvatar(
-                radius: 26,
-                backgroundColor: levelColor.withValues(alpha: 0.15),
-                child: Icon(
-                  alert.severity == "High"
-                      ? Icons.dangerous
-                      : alert.severity == "Medium"
-                      ? Icons.warning_amber_rounded
-                      : Icons.verified_user,
-                  color: levelColor,
-                ),
+      children: [
+
+      CircleAvatar(
+
+      radius: 26,
+
+        backgroundColor:
+        levelColor.withValues(alpha: 0.15),
+
+        child: Icon(
+
+          alert.severity == "High"
+              ? Icons.warning
+              : alert.severity == "Medium"
+              ? Icons.report_problem
+              : Icons.verified_user,
+
+          color: levelColor,
+
+        ),
+
+      ),
+
+      const SizedBox(width: 15),
+
+      Expanded(
+
+        child: Column(
+
+          crossAxisAlignment:
+          CrossAxisAlignment.start,
+
+          children: [
+
+            Text(
+
+              alert.userName,
+
+              style: const TextStyle(
+
+                fontSize: 20,
+
+                fontWeight: FontWeight.bold,
+
               ),
 
-              const SizedBox(width: 15),
+            ),
 
-              Expanded(
-                child: Column(
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
-                  children: [
+            const SizedBox(height: 5),
 
-                    Text(
-                      alert.incidentType,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+            Text(
 
-                    const SizedBox(height: 5),
+              alert.location,
 
-                    Text(
-                      alert.location,
-                      style: const TextStyle(
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
+              style: const TextStyle(
+                color: Colors.grey,
               ),
 
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color:
-                  levelColor.withValues(alpha: 0.15),
-                  borderRadius:
-                  BorderRadius.circular(20),
-                ),
-                child: Text(
-                  alert.severity,
-                  style: TextStyle(
-                    color: levelColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+            ),
 
-            ],
+          ],
+
+        ),
+
+      ),
+
+      Container(
+
+        padding: const EdgeInsets.symmetric(
+
+          horizontal: 12,
+
+          vertical: 6,
+
+        ),
+
+        decoration: BoxDecoration(
+
+          color:
+          levelColor.withValues(alpha: 0.15),
+
+          borderRadius:
+          BorderRadius.circular(20),
+
+        ),
+
+        child: Text(
+
+          alert.severity,
+
+          style: TextStyle(
+
+            color: levelColor,
+
+            fontWeight: FontWeight.bold,
+
           ),
 
-          const SizedBox(height: 18),
+        ),
 
-          Text(
-            "Status: ${alert.status}",
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+      ),
 
-          const SizedBox(height: 5),
+      ],
 
-          Text(
-            "Posted: ${alert.createdAt}",
-            style: const TextStyle(
-              color: Colors.grey,
-            ),
-          ),
+    ),
 
-          const SizedBox(height: 15),
+    const SizedBox(height: 18),
 
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.blue.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+    Text(
 
-                const Icon(
-                  Icons.smart_toy,
-                  color: Colors.blue,
-                ),
+    "Status: ${alert.status}",
 
-                const SizedBox(width: 10),
+    style: const TextStyle(
 
-                Expanded(
-                  child: Text(
-                    alert.aiRecommendation,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      height: 1.5,
-                    ),
-                  ),
-                ),
+    fontWeight: FontWeight.w600,
 
-              ],
-            ),
-          ),
+    ),
 
-          const SizedBox(height: 20),
+    ),
 
+    const SizedBox(height: 6),
+
+    Text(
+
+    "Latitude: ${alert.latitude}",
+
+    style: const TextStyle(
+    color: Colors.grey,
+    ),
+
+    ),
+
+    const SizedBox(height: 4),
+
+    Text(
+
+    "Longitude: ${alert.longitude}",
+
+    style: const TextStyle(
+    color: Colors.grey,
+    ),
+
+    ),
+
+    const SizedBox(height: 18),
           Row(
             children: [
 
               Expanded(
                 child: OutlinedButton.icon(
+
                   icon: const Icon(Icons.visibility),
+
                   label: const Text("View"),
+
                   onPressed: () {
 
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ReportDetailsScreen(
-                          incident: alert,
-                        ),
-                      ),
+                    showDialog(
+
+                      context: context,
+
+                      builder: (context) {
+
+                        return AlertDialog(
+
+                          title: const Text("SOS Alert Details"),
+
+                          content: SingleChildScrollView(
+
+                            child: Column(
+
+                              crossAxisAlignment:
+                              CrossAxisAlignment.start,
+
+                              mainAxisSize: MainAxisSize.min,
+
+                              children: [
+
+                                detailRow(
+                                  "User",
+                                  alert.userName,
+                                ),
+
+                                detailRow(
+                                  "Location",
+                                  alert.location,
+                                ),
+
+                                detailRow(
+                                  "Severity",
+                                  alert.severity,
+                                ),
+
+                                detailRow(
+                                  "Status",
+                                  alert.status,
+                                ),
+
+                                detailRow(
+                                  "Latitude",
+                                  alert.latitude.toString(),
+                                ),
+
+                                detailRow(
+                                  "Longitude",
+                                  alert.longitude.toString(),
+                                ),
+
+                                detailRow(
+                                  "Google Maps",
+                                  alert.mapUrl,
+                                ),
+
+                              ],
+
+                            ),
+
+                          ),
+
+                          actions: [
+
+                            TextButton(
+
+                              onPressed: () {
+
+                                Navigator.pop(context);
+
+                              },
+
+                              child: const Text("Close"),
+
+                            ),
+
+                          ],
+
+                        );
+
+                      },
+
                     );
 
                   },
+
                 ),
+
               ),
+
+              if (alert.status == "Active") ...[
+
+                const SizedBox(width: 10),
+
+                Expanded(
+
+                  child: ElevatedButton.icon(
+
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                    ),
+
+                    icon: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                    ),
+
+                    label: const Text(
+                      "Resolve",
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+
+                    onPressed: () async {
+
+                      await _firestoreService.updateSOSStatus(
+
+                        alertId: alert.alertId,
+
+                        status: "Resolved",
+
+                      );
+
+                    },
+
+                  ),
+
+                ),
+
+              ],
 
               const SizedBox(width: 10),
 
               Expanded(
+
                 child: ElevatedButton.icon(
+
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
                   ),
+
                   icon: const Icon(
                     Icons.delete,
                     color: Colors.white,
                   ),
+
                   label: const Text(
+
                     "Delete",
+
                     style: TextStyle(
                       color: Colors.white,
                     ),
+
                   ),
+
                   onPressed: () async {
 
-                    await _firestoreService.deleteIncident(
-                      alert.incidentId,
+                    await _firestoreService.deleteSOSAlert(
+                      alert.alertId,
                     );
 
                   },
+
                 ),
+
               ),
 
             ],
+
           ),
 
         ],
+
       ),
+
     );
+
   }
+
+  Widget detailRow(
+      String title,
+      String value,
+      ) {
+
+    return Padding(
+
+      padding: const EdgeInsets.only(bottom: 12),
+
+      child: Row(
+
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
+
+        children: [
+
+          SizedBox(
+
+            width: 90,
+
+            child: Text(
+
+              "$title:",
+
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+
+            ),
+
+          ),
+
+          Expanded(
+
+            child: Text(value),
+
+          ),
+
+        ],
+
+      ),
+
+    );
+
+  }
+
 }
