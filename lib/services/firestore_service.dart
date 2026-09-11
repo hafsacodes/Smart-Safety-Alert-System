@@ -186,6 +186,10 @@ class FirestoreService {
 
     required String severity,
     required String aiRecommendation,
+
+    bool notifyEmergencyContacts = true,
+    bool notifyNearbyUsers = true,
+    bool notifyPolice = true,
   }) async {
     final doc = _firestore.collection("sos_alerts").doc();
 
@@ -202,6 +206,10 @@ class FirestoreService {
 
       severity: severity,
       aiRecommendation: aiRecommendation,
+
+      notifyEmergencyContacts: notifyEmergencyContacts,
+      notifyNearbyUsers: notifyNearbyUsers,
+      notifyPolice: notifyPolice,
     );
 
     await doc.set({

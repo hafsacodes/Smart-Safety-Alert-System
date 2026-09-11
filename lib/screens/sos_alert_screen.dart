@@ -93,9 +93,12 @@ class _SosAlertScreenState extends State<SosAlertScreen> {
         location.longitude,
       );
 
-      final severity = AIService.analyzeIncident(
-        "Emergency SOS button pressed by user",
-      );
+      final severity = "High";
+      // A manually triggered SOS is treated as High severity by definition —
+      // the user has explicitly declared an emergency by pressing the button,
+      // so there is no need to run it through the keyword classifier used
+      // for incident reports (that engine is for inferring severity from
+      // free-text descriptions, which SOS does not collect).
 
       final aiRecommendation =
       AIService.getSafetyRecommendation(
@@ -111,6 +114,10 @@ class _SosAlertScreenState extends State<SosAlertScreen> {
 
         severity: severity,
         aiRecommendation: aiRecommendation,
+
+        notifyEmergencyContacts: emergencyContactSelected,
+        notifyNearbyUsers: nearbyUsersSelected,
+        notifyPolice: policeSelected,
       );
 
       if (!mounted) return;
@@ -150,222 +157,222 @@ class _SosAlertScreenState extends State<SosAlertScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: const Color(0xFFF7F9FC),
+      backgroundColor: const Color(0xFFF7F9FC),
 
-        body: SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
+      body: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
 
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
 
-                    children: [
+                children: [
 
-                    IconButton(
+                  IconButton(
                     onPressed: () {
-              timer?.cancel();
-              Navigator.pop(context);
-              },
-                icon: const Icon(Icons.arrow_back),
-              ),
-
-              const SizedBox(height: 10),
-
-              Center(
-                child: Text(
-                  alertSent
-                      ? "Alert Sent"
-                      : "Alert Sending",
-
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
+                      timer?.cancel();
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(Icons.arrow_back),
                   ),
-                ),
-              ),
 
-              const SizedBox(height: 20),
+                  const SizedBox(height: 10),
 
-              Center(
-                child: Text(
-                  alertSent
-                      ? "Your emergency alert has been sent successfully."
-                      : "Emergency alert will be sent in $countdown seconds.",
+                  Center(
+                    child: Text(
+                      alertSent
+                          ? "Alert Sent"
+                          : "Alert Sending",
 
-                  textAlign: TextAlign.center,
-
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 18,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 40),
-
-              Center(
-                child: Column(
-                  children: [
-
-                    Container(
-                      height: 190,
-                      width: 190,
-
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-
-                        color: alertSent
-                            ? Colors.green
-                            : Colors.red,
-
-                        boxShadow: [
-
-                          BoxShadow(
-                            color: (alertSent
-                                ? Colors.green
-                                : Colors.red)
-                                .withValues(alpha: 0.4),
-
-                            blurRadius: 25,
-                            spreadRadius: 8,
-                          ),
-                        ],
-                      ),
-
-                      child: Center(
-
-                        child: alertSent
-
-                            ? const Icon(
-                          Icons.check,
-                          color: Colors.white,
-                          size: 90,
-                        )
-
-                            : Text(
-                          "$countdown",
-
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 70,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
+                  ),
 
-                    const SizedBox(height: 25),
+                  const SizedBox(height: 20),
 
-                    if (!alertSent)
+                  Center(
+                    child: Text(
+                      alertSent
+                          ? "Your emergency alert has been sent successfully."
+                          : "Emergency alert will be sent in $countdown seconds.",
 
-                      GestureDetector(
+                      textAlign: TextAlign.center,
 
-                        onTap: () {
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
 
-                          timer?.cancel();
+                  const SizedBox(height: 40),
 
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                "Emergency Alert Cancelled",
-                              ),
-                            ),
-                          );
+                  Center(
+                    child: Column(
+                      children: [
 
-                          Navigator.pop(context);
-                        },
-
-                        child: Container(
-
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 35,
-                            vertical: 15,
-                          ),
+                        Container(
+                          height: 190,
+                          width: 190,
 
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade300,
-                            borderRadius: BorderRadius.circular(20),
+                            shape: BoxShape.circle,
+
+                            color: alertSent
+                                ? Colors.green
+                                : Colors.red,
+
+                            boxShadow: [
+
+                              BoxShadow(
+                                color: (alertSent
+                                    ? Colors.green
+                                    : Colors.red)
+                                    .withValues(alpha: 0.4),
+
+                                blurRadius: 25,
+                                spreadRadius: 8,
+                              ),
+                            ],
                           ),
 
-                          child: const Text(
-                            "Cancel Alert",
+                          child: Center(
 
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
+                            child: alertSent
+
+                                ? const Icon(
+                              Icons.check,
+                              color: Colors.white,
+                              size: 90,
+                            )
+
+                                : Text(
+                              "$countdown",
+
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 70,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                  ],
-                ),
+
+                        const SizedBox(height: 25),
+
+                        if (!alertSent)
+
+                          GestureDetector(
+
+                            onTap: () {
+
+                              timer?.cancel();
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "Emergency Alert Cancelled",
+                                  ),
+                                ),
+                              );
+
+                              Navigator.pop(context);
+                            },
+
+                            child: Container(
+
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 35,
+                                vertical: 15,
+                              ),
+
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade300,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+
+                              child: const Text(
+                                "Cancel Alert",
+
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 45),
+
+                  const Text(
+                    "Alert Will Be Sent To",
+
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  contactTile(
+                    name: "Emergency Contacts",
+                    selected: emergencyContactSelected,
+
+                    onTap: () {
+
+                      setState(() {
+                        emergencyContactSelected =
+                        !emergencyContactSelected;
+                      });
+                    },
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  contactTile(
+                    name: "Nearby Users",
+                    selected: nearbyUsersSelected,
+
+                    onTap: () {
+
+                      setState(() {
+                        nearbyUsersSelected =
+                        !nearbyUsersSelected;
+                      });
+                    },
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  contactTile(
+                    name: "Police / Authorities",
+                    selected: policeSelected,
+
+                    onTap: () {
+
+                      setState(() {
+                        policeSelected =
+                        !policeSelected;
+                      });
+                    },
+                  ),
+
+                  const SizedBox(height: 40),
+                ],
               ),
-
-              const SizedBox(height: 45),
-
-              const Text(
-                "Alert Will Be Sent To",
-
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              contactTile(
-                name: "Emergency Contacts",
-                selected: emergencyContactSelected,
-
-                onTap: () {
-
-                  setState(() {
-                    emergencyContactSelected =
-                    !emergencyContactSelected;
-                  });
-                },
-              ),
-
-              const SizedBox(height: 15),
-
-              contactTile(
-                name: "Nearby Users",
-                selected: nearbyUsersSelected,
-
-                onTap: () {
-
-                  setState(() {
-                    nearbyUsersSelected =
-                    !nearbyUsersSelected;
-                  });
-                },
-              ),
-
-              const SizedBox(height: 15),
-
-              contactTile(
-                name: "Police / Authorities",
-                selected: policeSelected,
-
-                onTap: () {
-
-                  setState(() {
-                    policeSelected =
-                    !policeSelected;
-                  });
-                },
-              ),
-
-              const SizedBox(height: 40),
-                    ],
-                ),
-              ),
-            )
             ),
-        );
-    }
+          )
+      ),
+    );
+  }
 
 //=====================================================
 // CONTACT TILE

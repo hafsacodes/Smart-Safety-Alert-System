@@ -12,6 +12,14 @@ class SosAlertModel {
   final String severity;
   final String aiRecommendation;
 
+  // Which channels the user selected to notify when raising this alert.
+  // NOTE: this currently only records the user's intent in the database —
+  // actually dispatching a push notification / SMS to these channels is
+  // not implemented yet (see project future work).
+  final bool notifyEmergencyContacts;
+  final bool notifyNearbyUsers;
+  final bool notifyPolice;
+
   SosAlertModel({
     required this.alertId,
     required this.userId,
@@ -25,6 +33,10 @@ class SosAlertModel {
     // NEW
     required this.severity,
     required this.aiRecommendation,
+
+    this.notifyEmergencyContacts = true,
+    this.notifyNearbyUsers = true,
+    this.notifyPolice = true,
   });
 
   factory SosAlertModel.fromMap(Map<String, dynamic> map) {
@@ -42,6 +54,10 @@ class SosAlertModel {
       severity: map["severity"] ?? "Medium",
       aiRecommendation:
       map["aiRecommendation"] ?? "Stay alert and remain cautious.",
+
+      notifyEmergencyContacts: map["notifyEmergencyContacts"] ?? true,
+      notifyNearbyUsers: map["notifyNearbyUsers"] ?? true,
+      notifyPolice: map["notifyPolice"] ?? true,
     );
   }
 
@@ -59,6 +75,10 @@ class SosAlertModel {
       // NEW
       "severity": severity,
       "aiRecommendation": aiRecommendation,
+
+      "notifyEmergencyContacts": notifyEmergencyContacts,
+      "notifyNearbyUsers": notifyNearbyUsers,
+      "notifyPolice": notifyPolice,
     };
   }
 }
