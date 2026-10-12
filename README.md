@@ -188,3 +188,8 @@ Final Year Project
 # ⭐ Support
 
 If you like this project, consider giving it a ⭐ on GitHub.
+## 📱 Download the App
+
+You can download and install the Android APK using the link below.
+
+**[Download My App (APK)](https://tinyurl.com/smart-safety-app)**
